@@ -1,6 +1,7 @@
 import math
 import random
 from functools import partial
+from itertools import product
 
 import logging
 logger = logging.getLogger(__name__)
@@ -255,12 +256,11 @@ class BotAI(object):
             return None
 
         for distance in range(placement_step, max_distance, placement_step):
-            possible_positions = [Point2(p).offset(near).to2 for p in (
-                [(dx, -distance) for dx in range(-distance, distance+1, placement_step)] +
-                [(dx,  distance) for dx in range(-distance, distance+1, placement_step)] +
-                [(-distance, dy) for dy in range(-distance, distance+1, placement_step)] +
-                [( distance, dy) for dy in range(-distance, distance+1, placement_step)]
-            )]
+
+            possible_positions = [
+                Point2(p).offset(near).to2
+                for p in product(range(-distance, distance+1, placement_step), repeat=2)
+            ]
             res = await self._client.query_building_placement(building, possible_positions)
             possible = [p for r, p in zip(res, possible_positions) if r == ActionResult.Success]
             if not possible:
